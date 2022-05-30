@@ -1,39 +1,35 @@
-import { createRef, forwardRef, useMemo, useRef } from "react";
+import { createRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useCursorInBound from "./hooks/useCursorInBound";
 import useCursorFollowMouse from "./hooks/useCursorFollowMouse";
+import useRequestAnimateFrame from "./hooks/useRequestAnimateFrame";
 
 const getRandomColor = () => Math.floor(Math.random() * 16777215).toString(16);
 
 const App = () => {
-  const myBoundsRefs = useMemo(
-    () => [...Array(20)].map(() => createRef<HTMLDivElement>()),
-    []
-  );
+  const myBoundsRefs = useMemo(() => [...Array(20)].map(() => createRef<HTMLDivElement>()),[]);
   const cursor = useRef<HTMLDivElement>(null);
-
   const { cursorInBound } = useCursorInBound(myBoundsRefs);
   useCursorFollowMouse(cursor);
+  const myBounds = useMemo(() => ( <> 
+    {[...Array(20)].map((x, i) => (
+      <div
+        ref={myBoundsRefs[i]}
+        key={i}
+        className={`h-44 w-44 border-2 border-black`}
+        style={{
+          backgroundColor: `#${getRandomColor()}`,
+        }}
+      ></div>
+    ))}
+  </>),[myBoundsRefs]);
 
-  const myBounds = useMemo(
-    () => (
-      <>
-        {[...Array(20)].map((x, i) => (
-          <div
-            ref={myBoundsRefs[i]}
-            key={i}
-            className={`h-44 w-44 border-2 border-black`}
-            style={{
-              backgroundColor: `#${getRandomColor()}`,
-            }}
-          ></div>
-        ))}
-      </>
-    ),
-    [myBoundsRefs]
-  );
+  const [count, setCount] = useState<number>(0)
+  
+  useRequestAnimateFrame(()=>setCount(p=>p+1))
 
   return (
     <>
+      <div className="">{Math.floor(count/60)}</div>
       <div className="flex flex-wrap gap-14">{myBounds}</div>
       <Cursor ref={cursor} cursorInBound={cursorInBound} />
     </>
